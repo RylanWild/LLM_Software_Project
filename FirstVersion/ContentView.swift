@@ -52,7 +52,7 @@ struct TallyPageView: View {
                             EmptyView()
                         } else {
                             ForEach(subjects.list) { subject in
-                                SubjectView(subject: subject, subjects: subjects)
+                                SubjectView(subject: subject)
                             }
                         }
                     }
@@ -92,7 +92,6 @@ struct TallyPageView: View {
 
 struct SubjectView: View {
     @ObservedObject var subject: Subject
-    @ObservedObject var subjects: Subjects
     @State private var showTimePicker = false
     @State private var selectedHours = 0
     @State private var selectedMinutes = 0
@@ -113,7 +112,7 @@ struct SubjectView: View {
                     .cornerRadius(8)
             }
             .sheet(isPresented: $showTimePicker) {
-                TimePickerView(subject: subject, selectedHours: $selectedHours, selectedMinutes: $selectedMinutes, subjects: subjects)
+                TimePickerView(subject: subject, selectedHours: $selectedHours, selectedMinutes: $selectedMinutes)
             }
         }
         .padding()
@@ -128,8 +127,7 @@ struct TimePickerView: View {
     @Binding var selectedHours: Int
     @Binding var selectedMinutes: Int
     @Environment(\.presentationMode) var presentationMode
-    @ObservedObject var subjects: Subjects
-
+    
     var body: some View {
         VStack {
             Text("Add Time Spent")
@@ -160,9 +158,6 @@ struct TimePickerView: View {
                 let totalMinutes = subject.minutes + selectedMinutes
                 subject.hours += selectedHours + totalMinutes / 60
                 subject.minutes = totalMinutes % 60
-                subject.objectWillChange.send() // Force subject to update
-                subjects.objectWillChange.send() // Explicitly notify that Subjects has changed
-                print("Updated: \(subject.name) - \(subject.hours) hr \(subject.minutes) min")
                 presentationMode.wrappedValue.dismiss()
             }) {
                 Text("Add Time")
@@ -222,7 +217,8 @@ struct TimeReportView: View {
                     .edgesIgnoringSafeArea(.all)
                 VStack {
                     Text("Time Report")
-                        .font(.largeTitle)
+                        .font(.system(size: 40, weight: .heavy, design: .rounded))
+                        .foregroundColor(.white)
                         .padding()
                         
                     ScrollView {
@@ -294,13 +290,13 @@ struct WelcomeView: View {
             VStack {
                 Spacer()
                 Text("TimeTally")
-                    .font(.custom("RoundedFontName", size: 40))
-                    .fontWeight(.bold)
+                    .font(.system(size: 50, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
+                    .shadow(color: Color.black.opacity(0.3), radius: 5, x: 2, y: 2)
                     .padding(.top, -100)
                 Spacer()
                 Text("<<<")
-                    .font(.system(size: 60))
+                    .font(.system(size: 60, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
                     .padding(.bottom, 20)
             }
