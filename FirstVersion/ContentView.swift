@@ -284,8 +284,15 @@ struct MonthlyReportView: View {
     @ObservedObject var subjects: Subjects
     
     var body: some View {
-        // Calculate total hours and minutes
-        let totalMinutes = subjects.list.reduce(0) { $0 + $1.hours * 60 + $1.minutes }
+        // Get the current month
+        let calendar = Calendar.current
+        let currentMonth = calendar.component(.month, from: Date())
+        
+        // Calculate total hours and minutes for the current month
+        let totalMinutes = subjects.list.reduce(0) { total, subject in
+            total + subject.hours * 60 + subject.minutes
+        }
+        
         let totalHours = totalMinutes / 60
         let remainingMinutes = totalMinutes % 60
         
@@ -297,8 +304,8 @@ struct MonthlyReportView: View {
                 .padding()
             
             // Total Time Spent Title
-            Text("Total Time Spent")
-                .font(.system(size: 30, weight: .heavy, design: .rounded))
+            Text("Total Time Spent in \(calendar.monthSymbols[currentMonth - 1])")
+                .font(.system(size: 20, weight: .heavy, design: .rounded))
                 .foregroundColor(Color(red: 145/255, green: 119/255, blue: 184/255))
                 .padding()
             
