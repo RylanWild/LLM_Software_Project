@@ -205,18 +205,22 @@ struct AddSubjectView: View {
 struct TimeReportView: View {
     @Binding var currentPage: Int
     @ObservedObject var subjects: Subjects
+    @State private var showMonthlyReport = false
     
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
                 Color(red: 219/255, green: 239/255, blue: 152/255)
                     .edgesIgnoringSafeArea(.all)
+                
                 VStack {
+                    // Title
                     Text("Time Report")
                         .font(.system(size: 40, weight: .heavy, design: .rounded))
                         .foregroundColor(.white)
                         .padding()
-                        
+                    
+                    // Scrollable list of subjects
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
                             ForEach(subjects.list) { subject in
@@ -240,6 +244,12 @@ struct TimeReportView: View {
                         .padding()
                     }
                     
+                    // Monthly Report Button
+                    monthlyReportButton
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                    
+                    // Bottom Bar
                     BottomBarView(currentPage: $currentPage)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -248,8 +258,65 @@ struct TimeReportView: View {
                 }
             }
         }
+        .sheet(isPresented: $showMonthlyReport) {
+            // Present your monthly report view here
+            MonthlyReportView(subjects: subjects)
+        }
+    }
+    
+    private var monthlyReportButton: some View {
+        Button(action: {
+            showMonthlyReport = true
+        }) {
+            Text("My Monthly Report")
+                .foregroundColor(.white)
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(red: 96/255, green: 92/255, blue: 184/255))
+                .cornerRadius(10)
+                .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 4)
+        }
     }
 }
+
+struct MonthlyReportView: View {
+    @ObservedObject var subjects: Subjects
+    
+    var body: some View {
+        // Calculate total hours and minutes
+        let totalMinutes = subjects.list.reduce(0) { $0 + $1.hours * 60 + $1.minutes }
+        let totalHours = totalMinutes / 60
+        let remainingMinutes = totalMinutes % 60
+        
+        VStack(spacing: 20) {
+            // Title
+            Text("Monthly Report")
+                .font(.system(size: 40, weight: .heavy, design: .rounded))
+                .foregroundColor(Color(red: 96/255, green: 92/255, blue: 184/255))
+                .padding()
+            
+            // Total Time Spent Title
+            Text("Total Time Spent")
+                .font(.system(size: 30, weight: .heavy, design: .rounded))
+                .foregroundColor(Color(red: 145/255, green: 119/255, blue: 184/255))
+                .padding()
+            
+            // Display total hours and minutes
+            Text("\(totalHours) hr \(remainingMinutes) min")
+                .font(.system(size: 30, weight: .heavy, design: .rounded))
+                .foregroundColor(Color(red: 96/255, green: 194/255, blue: 164/255))
+                .padding()
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
+        .edgesIgnoringSafeArea(.all)
+    }
+}
+
+
 struct BottomBarView: View {
     @Binding var currentPage: Int
     
