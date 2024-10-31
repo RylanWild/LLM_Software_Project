@@ -290,8 +290,9 @@ struct WelcomeView: View {
                     .padding(.top, -100)
                 Spacer()
                 Text("<<<")
-                    .font(.system(size: 60))
+                    .font(.system(size: 60, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
+                    .shadow(color: Color.black.opacity(0.3), radius: 5, x: 2, y: 2)
                     .padding(.bottom, 20)
             }
         }
