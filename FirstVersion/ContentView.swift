@@ -1,5 +1,4 @@
 import SwiftUI
-
 class Subject: Identifiable, ObservableObject {
     let id = UUID()
     let name: String
@@ -14,11 +13,9 @@ class Subject: Identifiable, ObservableObject {
         self.dateAdded = dateAdded
     }
 }
-
 class Subjects: ObservableObject {
     @Published var list: [Subject] = []
 }
-
 struct ContentView: View {
     @State private var currentPage = 0
     @StateObject private var subjects = Subjects()
@@ -35,7 +32,6 @@ struct ContentView: View {
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
     }
 }
-
 struct TallyPageView: View {
     @Binding var currentPage: Int
     @ObservedObject var subjects: Subjects
@@ -52,7 +48,7 @@ struct TallyPageView: View {
                             EmptyView()
                         } else {
                             ForEach(subjects.list) { subject in
-                                SubjectView(subject: subject)
+                                SubjectView(subject: subject, subjects: subjects)
                             }
                         }
                     }
@@ -89,9 +85,9 @@ struct TallyPageView: View {
         }
     }
 }
-
 struct SubjectView: View {
     @ObservedObject var subject: Subject
+    @ObservedObject var subjects: Subjects
     @State private var showTimePicker = false
     @State private var selectedHours = 0
     @State private var selectedMinutes = 0
@@ -112,7 +108,7 @@ struct SubjectView: View {
                     .cornerRadius(8)
             }
             .sheet(isPresented: $showTimePicker) {
-                TimePickerView(subject: subject, selectedHours: $selectedHours, selectedMinutes: $selectedMinutes)
+                TimePickerView(subject: subject, selectedHours: $selectedHours, selectedMinutes: $selectedMinutes, subjects: subjects)
             }
         }
         .padding()
@@ -121,13 +117,12 @@ struct SubjectView: View {
         .shadow(color: Color.gray.opacity(0.4), radius: 5, x: 0, y: 4)
     }
 }
-
 struct TimePickerView: View {
     @ObservedObject var subject: Subject
     @Binding var selectedHours: Int
     @Binding var selectedMinutes: Int
     @Environment(\.presentationMode) var presentationMode
-    
+    @ObservedObject var subjects: Subjects
     var body: some View {
         VStack {
             Text("Add Time Spent")
@@ -158,6 +153,9 @@ struct TimePickerView: View {
                 let totalMinutes = subject.minutes + selectedMinutes
                 subject.hours += selectedHours + totalMinutes / 60
                 subject.minutes = totalMinutes % 60
+                subject.objectWillChange.send() // Force subject to update
+                subjects.objectWillChange.send() // Explicitly notify that Subjects has changed
+                print("Updated: \(subject.name) - \(subject.hours) hr \(subject.minutes) min")
                 presentationMode.wrappedValue.dismiss()
             }) {
                 Text("Add Time")
@@ -172,7 +170,6 @@ struct TimePickerView: View {
         }
     }
 }
-
 struct AddSubjectView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var subjects: Subjects
@@ -205,7 +202,6 @@ struct AddSubjectView: View {
         .padding()
     }
 }
-
 struct TimeReportView: View {
     @Binding var currentPage: Int
     @ObservedObject var subjects: Subjects
@@ -254,7 +250,6 @@ struct TimeReportView: View {
         }
     }
 }
-
 struct BottomBarView: View {
     @Binding var currentPage: Int
     
@@ -281,7 +276,6 @@ struct BottomBarView: View {
         }
     }
 }
-
 struct WelcomeView: View {
     var body: some View {
         ZStack {
@@ -296,7 +290,7 @@ struct WelcomeView: View {
                     .padding(.top, -100)
                 Spacer()
                 Text("<<<")
-                    .font(.system(size: 60, weight: .heavy, design: .rounded))
+                    .font(.system(size: 60))
                     .foregroundColor(.white)
                     .padding(.bottom, 20)
             }
@@ -304,7 +298,6 @@ struct WelcomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
